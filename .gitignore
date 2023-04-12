@@ -7,7 +7,9 @@ scripts/flow/*/.flowconfig
 .grunt
 _SpecRunner.html
 __benchmarks__
-# build/
+build/
+debugger/public/*.js
+debugger/public/*.map
 !build/node_modules
 remote-repo/
 coverage/
