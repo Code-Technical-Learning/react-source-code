@@ -12,6 +12,9 @@ import ReactDOM from 'react-dom';
 // React 编辑器调试
 // https://juejin.cn/post/7169046885859082277#heading-5
 
+// 源码分析地址
+// https://7kms.github.io/react-illustration-series/main/fibertree-create
+
 // const root = ReactDOM.createRoot(document.getElementById('root'));
 // root.render(<App />);
 
