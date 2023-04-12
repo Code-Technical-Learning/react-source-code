@@ -12,8 +12,6 @@ import ReactDOM from 'react-dom';
 // React 编辑器调试
 // https://juejin.cn/post/7169046885859082277#heading-5
 
-debugger;
-
 // const root = ReactDOM.createRoot(document.getElementById('root'));
 // root.render(<App />);
 
