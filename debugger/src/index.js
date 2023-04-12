@@ -1,8 +1,10 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-
 import './index.css';
 import App from './App';
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+// const React = window.React;
+// const ReactDOM = window.ReactDOM;
 
 // React sourcemap 方法
 // https://zhuanlan.zhihu.com/p/548297074
@@ -11,9 +13,8 @@ import App from './App';
 // https://juejin.cn/post/7169046885859082277#heading-5
 
 debugger;
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+
+// const root = ReactDOM.createRoot(document.getElementById('root'));
+// root.render(<App />);
+
+ReactDOM.render(<App />, document.getElementById('root'));
