@@ -528,6 +528,7 @@ export function requestUpdateLane(fiber: Fiber): Lane {
   // Special cases
   const mode = fiber.mode;
   if ((mode & ConcurrentMode) === NoMode) {
+    // legacy 模式
     return (SyncLane: Lane);
   } else if (
     !deferRenderPhaseUpdateToNextBatch &&
@@ -548,6 +549,7 @@ export function requestUpdateLane(fiber: Fiber): Lane {
 
   const isTransition = requestCurrentTransition() !== NoTransition;
   if (isTransition) {
+    // 特殊情况, 处于suspense过程中
     if (__DEV__ && ReactCurrentBatchConfig.transition !== null) {
       const transition = ReactCurrentBatchConfig.transition;
       if (!transition._updatedFibers) {
@@ -932,6 +934,7 @@ function performConcurrentWorkOnRoot(root, didTimeout) {
 
   // Determine the next lanes to work on, using the fields stored
   // on the root.
+  // 获取本次`render`的优先级
   let lanes = getNextLanes(
     root,
     root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes,
@@ -1310,6 +1313,7 @@ function performSyncWorkOnRoot(root) {
 
   flushPassiveEffects();
 
+  // 获取本次`render`的优先级
   let lanes = getNextLanes(root, NoLanes);
   if (!includesSomeLane(lanes, SyncLane)) {
     // There's no remaining sync work left.
@@ -1519,7 +1523,11 @@ export function getRenderLanes(): Lanes {
   return renderLanes;
 }
 
+/**
+  刷新栈帧: 重置 FiberRoot上的全局属性 和 `fiber树构造`循环过程中的全局变量
+*/
 function prepareFreshStack(root: FiberRoot, lanes: Lanes): Fiber {
+  // 重置FiberRoot对象上的属性
   root.finishedWork = null;
   root.finishedLanes = NoLanes;
 
@@ -1544,7 +1552,12 @@ function prepareFreshStack(root: FiberRoot, lanes: Lanes): Fiber {
       interruptedWork = interruptedWork.return;
     }
   }
+
+  // 重置全局变量
   workInProgressRoot = root;
+  // 注意其中的createWorkInProgress(root.current, null), 其参数root.current即HostRootFiber,
+  // 作用是给HostRootFiber创建一个alternate副本.workInProgress指针指向这个副本(即workInProgress = HostRootFiber.alternate),
+  // 在上文double buffering中分析过, HostRootFiber.alternate是正在构造的fiber树的根节点.
   const rootWorkInProgress = createWorkInProgress(root.current, null);
   workInProgress = rootWorkInProgress;
   workInProgressRootRenderLanes = renderLanes = lanes;
@@ -1733,6 +1746,8 @@ export function renderHasNotSuspendedYet(): boolean {
 
 function renderRootSync(root: FiberRoot, lanes: Lanes) {
   const prevExecutionContext = executionContext;
+
+  // 设置当前的上下文状态
   executionContext |= RenderContext;
   const prevDispatcher = pushDispatcher();
 
@@ -1823,6 +1838,7 @@ function renderRootConcurrent(root: FiberRoot, lanes: Lanes) {
 
   // If the root or lanes have changed, throw out the existing stack
   // and prepare a fresh one. Otherwise we'll continue where we left off.
+  // 如果fiberRoot变动, 或者update.lane变动, 都会刷新栈帧, 丢弃上一次渲染进度
   if (workInProgressRoot !== root || workInProgressRootRenderLanes !== lanes) {
     if (enableUpdaterTracking) {
       if (isDevToolsPresent) {
@@ -1841,6 +1857,7 @@ function renderRootConcurrent(root: FiberRoot, lanes: Lanes) {
     }
 
     workInProgressTransitions = getTransitionsForLanes(root, lanes);
+    // 刷新栈帧
     resetRenderTimer();
     prepareFreshStack(root, lanes);
   }
@@ -2201,6 +2218,7 @@ function commitRootImpl(
     setCurrentUpdatePriority(DiscreteEventPriority);
 
     const prevExecutionContext = executionContext;
+    // 设置上下文为 commit 状态
     executionContext |= CommitContext;
 
     // Reset this to null before calling lifecycles

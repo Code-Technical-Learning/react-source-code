@@ -380,6 +380,7 @@ export function updateContainer(
 
   const root = enqueueUpdate(current, update, lane);
   if (root !== null) {
+    // Legacy (render)模式下的首次更新, 不会经过调度中心(第 2 阶段),而是直接进入fiber树构造(第 3 阶段).
     scheduleUpdateOnFiber(root, current, lane, eventTime);
     entangleTransitions(root, current, lane);
   }

@@ -164,6 +164,9 @@ export function createFiberRoot(
     isStrictMode,
     concurrentUpdatesByDefaultOverride,
   );
+
+  // 主要是代表 RootFiber
+  // 双缓冲技术：代表当前界面的fiber树(已经被展示出来, 挂载到fiberRoot.current上). 如果是初次构造(初始化渲染), 页面还没有渲染, 此时界面对应的 fiber 树为空(fiberRoot.current = null).
   root.current = uninitializedFiber;
   uninitializedFiber.stateNode = root;
 

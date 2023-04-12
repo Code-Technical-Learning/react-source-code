@@ -185,8 +185,12 @@ function getHighestPriorityLanes(lanes: Lanes | Lane): Lanes {
   }
 }
 
+// 无论是Legacy还是Concurrent模式, 在正式render之前, 都会调用getNextLanes获取一个优先级
+// getNextLanes会根据fiberRoot对象上的属性(expiredLanes, suspendedLanes, pingedLanes等), 确定出当前最紧急的lanes.
+// 此处返回的lanes会作为全局渲染的优先级, 用于fiber树构造过程中. 针对fiber对象或update对象, 只要它们的优先级(如: fiber.lanes和update.lane)比渲染优先级低, 都将会被忽略.
 export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
   // Early bailout if there's no pending work left.
+  // 1. check是否有等待中的lanes
   const pendingLanes = root.pendingLanes;
   if (pendingLanes === NoLanes) {
     return NoLanes;
@@ -202,9 +206,12 @@ export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
   const nonIdlePendingLanes = pendingLanes & NonIdleLanes;
   if (nonIdlePendingLanes !== NoLanes) {
     const nonIdleUnblockedLanes = nonIdlePendingLanes & ~suspendedLanes;
+
+    // 非Idle任务 ...
     if (nonIdleUnblockedLanes !== NoLanes) {
       nextLanes = getHighestPriorityLanes(nonIdleUnblockedLanes);
     } else {
+      // Idle任务 ...
       const nonIdlePingedLanes = nonIdlePendingLanes & pingedLanes;
       if (nonIdlePingedLanes !== NoLanes) {
         nextLanes = getHighestPriorityLanes(nonIdlePingedLanes);

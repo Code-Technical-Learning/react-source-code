@@ -3827,6 +3827,10 @@ function attemptEarlyBailoutIfNoScheduledUpdate(
   return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
 }
 
+// fiber.lanes: 代表本节点的优先级
+// fiber.childLanes: 代表子节点的优先级 从FiberNode的构造函数中可以看出, fiber.lanes和fiber.childLanes的初始值都为NoLanes, 在fiber树构造过程中, 使用全局的渲染优先级(renderLanes)和fiber.lanes判断fiber节点是否更新(源码地址).
+// 如果全局的渲染优先级renderLanes不包括fiber.lanes, 证明该fiber节点没有更新, 可以复用.
+// 如果不能复用, 进入创建阶段.
 function beginWork(
   current: Fiber | null,
   workInProgress: Fiber,
@@ -3878,6 +3882,7 @@ function beginWork(
       ) {
         // No pending updates or context. Bail out now.
         didReceiveUpdate = false;
+        // 本`fiber`节点的没有更新, 可以复用, 进入bailout逻辑
         return attemptEarlyBailoutIfNoScheduledUpdate(
           current,
           workInProgress,
@@ -3921,7 +3926,7 @@ function beginWork(
   // sometimes bails out later in the begin phase. This indicates that we should
   // move this assignment out of the common path and into each branch.
   workInProgress.lanes = NoLanes;
-
+  // 不能复用, 创建新的fiber节点
   switch (workInProgress.tag) {
     case IndeterminateComponent: {
       return mountIndeterminateComponent(

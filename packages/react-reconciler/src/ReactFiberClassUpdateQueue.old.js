@@ -207,6 +207,10 @@ export function cloneUpdateQueue<State>(
   }
 }
 
+// update对象, 它是一个环形链表. 对于单个update对象来讲, update.lane代表它的优先级, 称之为update优先级
+// 有 2 种情况会创建update对象,无论是应用初始化或者发起组件更新, 创建update.lane的逻辑都是一样的, 都是根据当前时间, 创建一个 update 优先级:
+//    应用初始化: 在react-reconciler包中的updateContainer
+//    发起组件更新: 假设在 class 组件中调用setState
 export function createUpdate(eventTime: number, lane: Lane): Update<*> {
   const update: Update<*> = {
     eventTime,

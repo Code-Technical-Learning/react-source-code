@@ -272,12 +272,17 @@ const RootCompleted = 5;
 const RootDidNotComplete = 6;
 
 // Describes where we are in the React execution stack
+// 当前 React 的执行栈（执行上下文）
 let executionContext: ExecutionContext = NoContext;
+
 // The root we're working on
+// 当前 Root 节点
 let workInProgressRoot: FiberRoot | null = null;
 // The fiber we're working on
+// 正在处理中的fiber节点
 let workInProgress: Fiber | null = null;
 // The lanes we're rendering
+// 正在渲染的车道
 let workInProgressRootRenderLanes: Lanes = NoLanes;
 
 // A contextual version of workInProgressRootRenderLanes. It is a superset of
@@ -291,11 +296,14 @@ let workInProgressRootRenderLanes: Lanes = NoLanes;
 export let renderLanes: Lanes = NoLanes;
 
 // Whether to root completed, errored, suspended, etc.
+// fiber构造完后, root节点的状态: completed, errored, suspended等
 let workInProgressRootExitStatus: RootExitStatus = RootInProgress;
 // A fatal error, if one is thrown
+// 重大错误
 let workInProgressRootFatalError: mixed = null;
 // The work left over by components that were visited during this render. Only
 // includes unprocessed updates, not work in bailed out children.
+// 在render期间被跳过(由于优先级不够)的lanes: 只包括未处理的updates, 不包括被复用的fiber节点
 let workInProgressRootSkippedLanes: Lanes = NoLanes;
 // Lanes that were updated (in an interleaved event) during this render.
 let workInProgressRootInterleavedUpdatedLanes: Lanes = NoLanes;
@@ -479,6 +487,7 @@ let pendingPassiveEffectsRemainingLanes: Lanes = NoLanes;
 let pendingPassiveTransitions: Array<Transition> | null = null;
 
 // Use these to prevent an infinite loop of nested updates
+// 防止无限循环和嵌套更新
 const NESTED_UPDATE_LIMIT = 50;
 let nestedUpdateCount: number = 0;
 let rootWithNestedUpdates: FiberRoot | null = null;
@@ -492,6 +501,7 @@ let rootWithPassiveNestedUpdates: FiberRoot | null = null;
 // If two updates are scheduled within the same event, we should treat their
 // event times as simultaneous, even if the actual clock time has advanced
 // between the first and second call.
+// 发起更新的时间
 let currentEventTime: number = NoTimestamp;
 let currentEventTransitionLane: Lanes = NoLanes;
 
@@ -1511,7 +1521,7 @@ export function flushControlled(fn: () => mixed): void {
 // hidden subtree. The stack logic is managed there because that's the only
 // place that ever modifies it. Which module it lives in doesn't matter for
 // performance because this function will get inlined regardless
-export function setRenderLanes(subtreeRenderLanes: Lanes) {
+export function setRenderLanes(: Lanes) {
   renderLanes = subtreeRenderLanes;
 }
 
