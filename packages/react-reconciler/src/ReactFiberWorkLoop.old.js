@@ -506,6 +506,7 @@ export function getWorkInProgressRootRenderLanes(): Lanes {
 }
 
 export function requestEventTime() {
+  // 初次渲染 executionContext = 1
   if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
     // We're inside React, so it's fine to read the actual time.
     return now();
@@ -516,6 +517,7 @@ export function requestEventTime() {
     return currentEventTime;
   }
   // This is the first update since React yielded. Compute a new start time.
+  // 初次渲染获取时间
   currentEventTime = now();
   return currentEventTime;
 }
@@ -527,6 +529,7 @@ export function getCurrentTime() {
 export function requestUpdateLane(fiber: Fiber): Lane {
   // Special cases
   const mode = fiber.mode;
+  // legacy 初次渲染返回 同步模式
   if ((mode & ConcurrentMode) === NoMode) {
     // legacy 模式
     return (SyncLane: Lane);

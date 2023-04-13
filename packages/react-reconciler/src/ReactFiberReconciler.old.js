@@ -328,7 +328,7 @@ export function updateContainer(
     onScheduleRoot(container, element);
   }
   const current = container.current;
-  const eventTime = requestEventTime();
+  const eventTime = requestEventTime(); // 初次渲染获取当前时间
   const lane = requestUpdateLane(current);
 
   if (enableSchedulingProfiler) {
