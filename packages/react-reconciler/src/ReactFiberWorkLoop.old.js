@@ -628,7 +628,7 @@ export function scheduleUpdateOnFiber(
     }
   }
 
-  // Mark that the root has a pending update.
+  // 标记根目录有待处理的更新
   markRootUpdated(root, lane, eventTime);
 
   if (
@@ -774,11 +774,11 @@ export function isUnsafeClassRenderPhaseUpdate(fiber: Fiber) {
 function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
   const existingCallbackNode = root.callbackNode;
 
-  // Check if any lanes are being starved by other work. If so, mark them as
-  // expired so we know to work on those next.
+  // Check if any lanes are being starved by other work. If so, mark them as 检查是否有任何通道被其他工作占用。如果是这样，将它们标记为
+  // expired so we know to work on those next. 已过期，所以我们知道接下来要处理哪些
   markStarvedLanesAsExpired(root, currentTime);
 
-  // Determine the next lanes to work on, and their priority.
+  // Determine the next lanes to work on, and their priority. 确定下一个要处理的车道及其优先级
   const nextLanes = getNextLanes(
     root,
     root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes,
@@ -832,7 +832,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
     cancelCallback(existingCallbackNode);
   }
 
-  // Schedule a new callback.
+  // Schedule a new callback. 一个新的调度回调函数
   let newCallbackNode;
   if (newCallbackPriority === SyncLane) {
     // Special case: Sync React callbacks are scheduled on a special
@@ -1303,7 +1303,7 @@ function markRootSuspended(root, suspendedLanes) {
   markRootSuspended_dontCallThisOneDirectly(root, suspendedLanes);
 }
 
-// This is the entry point for synchronous tasks that don't go
+// This is the entry point for synchronous tasks that don't go 同步任务的入口点
 // through Scheduler
 function performSyncWorkOnRoot(root) {
   if (enableProfilerTimer && enableProfilerNestedUpdatePhase) {
@@ -1314,7 +1314,7 @@ function performSyncWorkOnRoot(root) {
     throw new Error('Should not already be working.');
   }
 
-  flushPassiveEffects();
+  flushPassiveEffects(); // 刷新被动作用（首次渲染返回 false）
 
   // 获取本次`render`的优先级
   let lanes = getNextLanes(root, NoLanes);
@@ -1324,6 +1324,7 @@ function performSyncWorkOnRoot(root) {
     return null;
   }
 
+  // 从根节点开始 自上而下更新
   let exitStatus = renderRootSync(root, lanes);
   if (root.tag !== LegacyRoot && exitStatus === RootErrored) {
     // If something threw an error, try rendering one more time. We'll render
@@ -1351,9 +1352,12 @@ function performSyncWorkOnRoot(root) {
 
   // We now have a consistent tree. Because this is a sync render, we
   // will commit it even if something suspended.
+  // 将最新的fiber树挂载到root.finishedWork节点上
   const finishedWork: Fiber = (root.current.alternate: any);
   root.finishedWork = finishedWork;
   root.finishedLanes = lanes;
+
+  // 进入 commit 阶段
   commitRoot(
     root,
     workInProgressRootRecoverableErrors,
@@ -1756,6 +1760,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
 
   // If the root or lanes have changed, throw out the existing stack
   // and prepare a fresh one. Otherwise we'll continue where we left off.
+  // 如果fiberRoot变动, 或者update.lane变动, 都会刷新栈帧, 丢弃上一次渲染进度
   if (workInProgressRoot !== root || workInProgressRootRenderLanes !== lanes) {
     if (enableUpdaterTracking) {
       if (isDevToolsPresent) {
@@ -1774,6 +1779,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
     }
 
     workInProgressTransitions = getTransitionsForLanes(root, lanes);
+    // 刷新栈帧, legacy模式下都会进入
     prepareFreshStack(root, lanes);
   }
 
@@ -1787,9 +1793,10 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
     markRenderStarted(lanes);
   }
 
+  // 循环创建fiber树
   do {
     try {
-      workLoopSync();
+      workLoopSync(); // workLoopConcurrent  多了个时间切片（shouldYield()）的概念
       break;
     } catch (thrownValue) {
       handleError(root, thrownValue);
@@ -1927,7 +1934,7 @@ function workLoopConcurrent() {
 function performUnitOfWork(unitOfWork: Fiber): void {
   // The current, flushed, state of this fiber is the alternate. Ideally
   // nothing should rely on this, but relying on it here means that we don't
-  // need an additional field on the work in progress.
+  // need an additional field on the work in progress. （unitOfWork 就是被传入的 workInProgress 首次渲染就是 fiberRoot）
   const current = unitOfWork.alternate;
   setCurrentDebugFiberInDEV(unitOfWork);
 
@@ -1952,9 +1959,16 @@ function performUnitOfWork(unitOfWork: Fiber): void {
   ReactCurrentOwner.current = null;
 }
 
+// 调用completeWork
+// 1. 给fiber节点(tag=HostComponent, HostText)创建 DOM 实例, 设置fiber.stateNode局部状态(如tag=HostComponent, HostText节点: fiber.stateNode 指向这个 DOM 实例).
+//    为 DOM 节点设置属性, 绑定事件(这里先说明有这个步骤, 详细的事件处理流程, 在合成事件原理中详细说明).
+//    设置fiber.flags标记
+// 2. 把当前 fiber 对象的副作用队列(firstEffect和lastEffect)添加到父节点的副作用队列之后, 更新父节点的firstEffect和lastEffect指针.
+// 3. 识别beginWork阶段设置的fiber.flags, 判断当前 fiber 是否有副作用(增,删,改), 如果有, 需要将当前 fiber 加入到父节点的effects队列, 等待commit阶段处理.
 function completeUnitOfWork(unitOfWork: Fiber): void {
   // Attempt to complete the current unit of work, then move to the next
   // sibling. If there are no more siblings, return to the parent fiber.
+  // 外层循环控制并移动指针(`workInProgress`,`completedWork`等)
   let completedWork = unitOfWork;
   do {
     // The current, flushed, state of this fiber is the alternate. Ideally
@@ -1980,8 +1994,10 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
       }
       resetCurrentDebugFiberInDEV();
 
+      // 1. 处理Fiber节点, 会调用渲染器(调用react-dom包, 关联Fiber节点和dom对象, 绑定事件等)
       if (next !== null) {
         // Completing this fiber spawned new work. Work on that next.
+        // 如果派生出其他的子节点, 则回到`beginWork`阶段进行处理
         workInProgress = next;
         return;
       }
@@ -2022,6 +2038,8 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
 
       if (returnFiber !== null) {
         // Mark the parent fiber as incomplete and clear its subtree flags.
+        // 2. 收集当前Fiber节点以及其子树的副作用effects
+        // 2.1 把子节点的副作用队列添加到父节点上
         returnFiber.flags |= Incomplete;
         returnFiber.subtreeFlags = NoFlags;
         returnFiber.deletions = null;
@@ -2033,18 +2051,22 @@ function completeUnitOfWork(unitOfWork: Fiber): void {
       }
     }
 
+    // 如果有兄弟节点, 返回之后再次进入`beginWork`阶段
     const siblingFiber = completedWork.sibling;
     if (siblingFiber !== null) {
       // If there is more work to do in this returnFiber, do that next.
       workInProgress = siblingFiber;
       return;
     }
+
+    // 移动指针, 指向下一个节点
     // Otherwise, return to the parent
     completedWork = returnFiber;
     // Update the next thing we're working on in case something throws.
     workInProgress = completedWork;
   } while (completedWork !== null);
 
+  // 已回溯到根节点, 设置workInProgressRootExitStatus = RootCompleted
   // We've reached the root.
   if (workInProgressRootExitStatus === RootInProgress) {
     workInProgressRootExitStatus = RootCompleted;

@@ -940,6 +940,7 @@ function completeWork(
               // updates too, because current.child would only be null if the
               // previous render was null (so the container would already
               // be empty).
+              // 设置fiber.flags标记
               workInProgress.flags |= Snapshot;
 
               // If this was a forced client render, there may have been
@@ -966,6 +967,7 @@ function completeWork(
       popHostContext(workInProgress);
       const rootContainerInstance = getRootHostContainer();
       const type = workInProgress.type;
+      // update逻辑, 初次render不会进入
       if (current !== null && workInProgress.stateNode != null) {
         updateHostComponent(
           current,
@@ -1013,6 +1015,7 @@ function completeWork(
             markUpdate(workInProgress);
           }
         } else {
+          // 1. 创建DOM对象
           const instance = createInstance(
             type,
             newProps,
@@ -1021,13 +1024,16 @@ function completeWork(
             workInProgress,
           );
 
+          // 2. 把子树中的DOM对象append到本节点的DOM对象之后
           appendAllChildren(instance, workInProgress, false, false);
 
+          // 设置stateNode属性, 指向DOM对象
           workInProgress.stateNode = instance;
 
           // Certain renderers require commit-time effects for initial mount.
           // (eg DOM renderer supports auto-focus for certain elements).
           // Make sure such renderers get scheduled for later work.
+          // 3. 设置DOM对象的属性, 绑定事件等
           if (
             finalizeInitialChildren(
               instance,
@@ -1037,10 +1043,12 @@ function completeWork(
               currentHostContext,
             )
           ) {
+            // 设置fiber.flags标记(Update)
             markUpdate(workInProgress);
           }
         }
 
+        // 设置fiber.flags标记(Ref)
         if (workInProgress.ref !== null) {
           // If there is a ref on a host node we need to schedule a callback
           markRef(workInProgress);

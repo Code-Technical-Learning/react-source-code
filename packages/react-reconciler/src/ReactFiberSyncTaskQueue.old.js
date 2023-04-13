@@ -16,6 +16,7 @@ import {
 } from './ReactEventPriorities.old';
 import {ImmediatePriority, scheduleCallback} from './Scheduler';
 
+// 回调任务队列
 let syncQueue: Array<SchedulerCallback> | null = null;
 let includesLegacySyncCallbacks: boolean = false;
 let isFlushingSyncQueue: boolean = false;

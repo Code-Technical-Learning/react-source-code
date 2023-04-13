@@ -328,7 +328,9 @@ export function updateContainer(
     onScheduleRoot(container, element);
   }
   const current = container.current;
-  const eventTime = requestEventTime(); // 初次渲染获取当前时间
+  const eventTime = requestEventTime(); // 初次渲染获取当前时间戳
+  // legacy 是同步
+  // 根据车道优先级, 创建update对象, 并加入fiber.updateQueue.pending队列
   const lane = requestUpdateLane(current);
 
   if (enableSchedulingProfiler) {
@@ -359,6 +361,7 @@ export function updateContainer(
     }
   }
 
+  // 创建更新队列，为 tag 为 update操作
   const update = createUpdate(eventTime, lane);
   // Caution: React DevTools currently depends on this property
   // being called "element".
@@ -380,6 +383,7 @@ export function updateContainer(
 
   const root = enqueueUpdate(current, update, lane);
   if (root !== null) {
+    // 进入reconciler运作流程中的`输入`环节
     // Legacy (render)模式下的首次更新, 不会经过调度中心(第 2 阶段),而是直接进入fiber树构造(第 3 阶段).
     scheduleUpdateOnFiber(root, current, lane, eventTime);
     entangleTransitions(root, current, lane);

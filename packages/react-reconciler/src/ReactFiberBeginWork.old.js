@@ -1212,7 +1212,7 @@ function updateClassComponent(
   // Push context providers early to prevent context stack mismatches.
   // During mounting we don't know the child context yet as the instance doesn't exist.
   // We will invalidate the child context in finishClassComponent() right after rendering.
-  let hasContext;
+  let hasContext; // Provider context 相关函数
   if (isLegacyContextProvider(Component)) {
     hasContext = true;
     pushLegacyContextProvider(workInProgress);
@@ -1224,7 +1224,7 @@ function updateClassComponent(
   const instance = workInProgress.stateNode;
   let shouldUpdate;
   if (instance === null) {
-    resetSuspendedCurrentOnMountInLegacyMode(current, workInProgress);
+    resetSuspendedCurrentOnMountInLegacyMode(current, workInProgress); // Suspended Lazy 组件函数
 
     // In the initial pass we might need to construct the instance.
     constructClassInstance(workInProgress, Component, nextProps);
@@ -1247,6 +1247,7 @@ function updateClassComponent(
       renderLanes,
     );
   }
+  // 执行render方法, 获取下级reactElement 根据实际情况, 设置fiber.flags
   const nextUnitOfWork = finishClassComponent(
     current,
     workInProgress,
@@ -1390,10 +1391,12 @@ function updateHostRoot(current, workInProgress, renderLanes) {
     throw new Error('Should have a current fiber. This is a bug in React.');
   }
 
+  // 1. 状态计算, 更新整合到 workInProgress.memoizedState中来
   const nextProps = workInProgress.pendingProps;
   const prevState = workInProgress.memoizedState;
   const prevChildren = prevState.element;
   cloneUpdateQueue(current, workInProgress);
+  // 遍历updateQueue.shared.pending, 提取有足够优先级的update对象, 计算出最终的状态 workInProgress.memoizedState
   processUpdateQueue(workInProgress, nextProps, null, renderLanes);
 
   const nextState: RootState = workInProgress.memoizedState;
@@ -1415,6 +1418,7 @@ function updateHostRoot(current, workInProgress, renderLanes) {
 
   // Caution: React DevTools currently depends on this property
   // being called "element".
+  // 2. 获取下级`ReactElement`对象
   const nextChildren = nextState.element;
   if (supportsHydration && prevState.isDehydrated) {
     // This is a hydration root whose shell has not yet hydrated. We should
@@ -1510,6 +1514,7 @@ function updateHostRoot(current, workInProgress, renderLanes) {
     if (nextChildren === prevChildren) {
       return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
+    // 3. 根据`ReactElement`对象, 调用`reconcileChildren`生成`Fiber`子节点(只生成`次级子节点`)
     reconcileChildren(current, workInProgress, nextChildren, renderLanes);
   }
   return workInProgress.child;
@@ -1544,10 +1549,12 @@ function updateHostComponent(
     tryToClaimNextHydratableInstance(workInProgress);
   }
 
+  // 1. 状态计算, 由于HostComponent是无状态组件, 所以只需要收集 nextProps即可, 它没有 memoizedState
   const type = workInProgress.type;
   const nextProps = workInProgress.pendingProps;
   const prevProps = current !== null ? current.memoizedProps : null;
 
+  // 2. 获取下级`ReactElement`对象
   let nextChildren = nextProps.children;
   const isDirectTextChild = shouldSetTextContent(type, nextProps);
 
@@ -1556,14 +1563,18 @@ function updateHostComponent(
     // case. We won't handle it as a reified child. We will instead handle
     // this in the host environment that also has access to this prop. That
     // avoids allocating another HostText fiber and traversing it.
+    // 如果子节点只有一个文本节点, 不用再创建一个HostText类型的fiber
     nextChildren = null;
   } else if (prevProps !== null && shouldSetTextContent(type, prevProps)) {
     // If we're switching from a direct text child to a normal child, or to
     // empty, we need to schedule the text content to be reset.
+    // 特殊操作需要设置fiber.flags
     workInProgress.flags |= ContentReset;
   }
 
+  // 特殊操作需要设置fiber.flags
   markRef(current, workInProgress);
+  // 3. 根据`ReactElement`对象, 调用`reconcileChildren`生成`Fiber`子节点(只生成`次级子节点`)
   reconcileChildren(current, workInProgress, nextChildren, renderLanes);
   return workInProgress.child;
 }
@@ -3854,6 +3865,7 @@ function beginWork(
     }
   }
 
+  // update 逻辑 首次 render 不会进入
   if (current !== null) {
     const oldProps = current.memoizedProps;
     const newProps = workInProgress.pendingProps;
@@ -3925,8 +3937,8 @@ function beginWork(
   // the update queue. However, there's an exception: SimpleMemoComponent
   // sometimes bails out later in the begin phase. This indicates that we should
   // move this assignment out of the common path and into each branch.
-  workInProgress.lanes = NoLanes;
-  // 不能复用, 创建新的fiber节点
+  workInProgress.lanes = NoLanes; // 设置workInProgress优先级为NoLanes(最高优先级)</any>
+  // 不能复用, 根据workInProgress节点的类型, 用不同的方法派生出子节点,创建新的fiber节点
   switch (workInProgress.tag) {
     case IndeterminateComponent: {
       return mountIndeterminateComponent(

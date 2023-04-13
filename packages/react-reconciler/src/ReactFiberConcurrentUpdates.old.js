@@ -46,6 +46,9 @@ type ConcurrentQueue = {
 // we wait until the current render is over (either finished or interrupted)
 // before adding it to the fiber/hook queue. Push to this array so we can
 // access the queue, fiber, update, et al later.
+// 如果渲染正在进行中，并且我们收到来自并发事件的更新，
+// 我们等到当前渲染结束（完成或中断）
+// 在将它添加到 fiber/hook 队列之前。推送到这个数组，这样我们就可以稍后访问队列、光纤、更新等
 const concurrentQueues: Array<any> = [];
 let concurrentQueuesIndex = 0;
 
