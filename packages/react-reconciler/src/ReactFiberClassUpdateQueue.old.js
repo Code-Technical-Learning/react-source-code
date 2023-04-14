@@ -214,9 +214,9 @@ export function cloneUpdateQueue<State>(
 export function createUpdate(eventTime: number, lane: Lane): Update<*> {
   const update: Update<*> = {
     eventTime,
-    lane,
+    lane, // 优先级
 
-    tag: UpdateState,
+    tag: UpdateState, // update 类型
     payload: null,
     callback: null,
 
@@ -272,6 +272,7 @@ export function enqueueUpdate<State>(
     // currently renderings (a pattern that is accompanied by a warning).
     return unsafe_markUpdateLaneFromFiberToRoot(fiber, lane);
   } else {
+    // 加入并行类更新队列
     return enqueueConcurrentClassUpdate(fiber, sharedQueue, update, lane);
   }
 }

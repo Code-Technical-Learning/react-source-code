@@ -319,18 +319,18 @@ export function createHydrationContainer(
 }
 
 export function updateContainer(
-  element: ReactNodeList,
-  container: OpaqueRoot,
+  element: ReactNodeList, // reactElement
+  container: OpaqueRoot, // fiberRoot
   parentComponent: ?React$Component<any, any>,
   callback: ?Function,
 ): Lane {
   if (__DEV__) {
     onScheduleRoot(container, element);
   }
-  const current = container.current;
+  const current = container.current; // current 是 rootFiber
   const eventTime = requestEventTime(); // 初次渲染获取当前时间戳
-  // legacy 是同步
-  // 根据车道优先级, 创建update对象, 并加入fiber.updateQueue.pending队列
+  // 首次渲染为 legacy：是同步
+  // 根据通道优先级, 创建update对象, 并加入fiber.updateQueue.pending队列
   const lane = requestUpdateLane(current);
 
   if (enableSchedulingProfiler) {
@@ -381,6 +381,7 @@ export function updateContainer(
     update.callback = callback;
   }
 
+  // 设置 当前 fiber 更新队列的通道,返回 fiberRoot
   const root = enqueueUpdate(current, update, lane);
   if (root !== null) {
     // 进入reconciler运作流程中的`输入`环节

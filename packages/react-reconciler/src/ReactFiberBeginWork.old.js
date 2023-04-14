@@ -1395,7 +1395,7 @@ function updateHostRoot(current, workInProgress, renderLanes) {
   const nextProps = workInProgress.pendingProps;
   const prevState = workInProgress.memoizedState;
   const prevChildren = prevState.element;
-  cloneUpdateQueue(current, workInProgress);
+  cloneUpdateQueue(current, workInProgress); // 将 current 的updateQueue 克隆到 workInProgress
   // 遍历updateQueue.shared.pending, 提取有足够优先级的update对象, 计算出最终的状态 workInProgress.memoizedState
   processUpdateQueue(workInProgress, nextProps, null, renderLanes);
 
@@ -1515,6 +1515,7 @@ function updateHostRoot(current, workInProgress, renderLanes) {
       return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
     // 3. 根据`ReactElement`对象, 调用`reconcileChildren`生成`Fiber`子节点(只生成`次级子节点`)
+    // 为 workInProgress 设置child 为子 reactElement
     reconcileChildren(current, workInProgress, nextChildren, renderLanes);
   }
   return workInProgress.child;
@@ -3865,7 +3866,7 @@ function beginWork(
     }
   }
 
-  // update 逻辑 首次 render 不会进入
+  // update 逻辑
   if (current !== null) {
     const oldProps = current.memoizedProps;
     const newProps = workInProgress.pendingProps;
@@ -3880,7 +3881,7 @@ function beginWork(
       // This may be unset if the props are determined to be equal later (memo).
       didReceiveUpdate = true;
     } else {
-      // Neither props nor legacy context changes. Check if there's a pending
+      // Neither props nor legacy context changes. 查看是否有 pending
       // update or context change.
       const hasScheduledUpdateOrContext = checkScheduledUpdateOrContext(
         current,
@@ -3937,7 +3938,7 @@ function beginWork(
   // the update queue. However, there's an exception: SimpleMemoComponent
   // sometimes bails out later in the begin phase. This indicates that we should
   // move this assignment out of the common path and into each branch.
-  workInProgress.lanes = NoLanes; // 设置workInProgress优先级为NoLanes(最高优先级)</any>
+  workInProgress.lanes = NoLanes; // 重置优先级为 0
   // 不能复用, 根据workInProgress节点的类型, 用不同的方法派生出子节点,创建新的fiber节点
   switch (workInProgress.tag) {
     case IndeterminateComponent: {

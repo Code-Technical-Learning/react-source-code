@@ -714,7 +714,7 @@ export function scheduleUpdateOnFiber(
         markRootSuspended(root, workInProgressRootRenderLanes);
       }
     }
-
+    // 确认根的调度
     ensureRootIsScheduled(root, eventTime);
     if (
       lane === SyncLane &&
@@ -774,11 +774,11 @@ export function isUnsafeClassRenderPhaseUpdate(fiber: Fiber) {
 function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
   const existingCallbackNode = root.callbackNode;
 
-  // Check if any lanes are being starved by other work. If so, mark them as 检查是否有任何通道被其他工作占用。如果是这样，将它们标记为
-  // expired so we know to work on those next. 已过期，所以我们知道接下来要处理哪些
+  // Check if any lanes are being starved by other work. If so, mark them as 检查是否有 pending 通道被其他工作占用。如果是这样，将它们标记为已过期，所以我们知道接下来要处理哪些
+  // expired so we know to work on those next.
   markStarvedLanesAsExpired(root, currentTime);
 
-  // Determine the next lanes to work on, and their priority. 确定下一个要处理的车道及其优先级
+  // Determine the next lanes to work on, and their priority. 确定下一个要处理的通道及渲染优先级
   const nextLanes = getNextLanes(
     root,
     root === workInProgressRoot ? workInProgressRootRenderLanes : NoLanes,
@@ -794,7 +794,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
     return;
   }
 
-  // We use the highest priority lane to represent the priority of the callback.
+  // 使用最高优先级通道来表示回调的优先级
   const newCallbackPriority = getHighestPriorityLane(nextLanes);
 
   // Check if there's an existing task. We may be able to reuse it.
@@ -832,7 +832,7 @@ function ensureRootIsScheduled(root: FiberRoot, currentTime: number) {
     cancelCallback(existingCallbackNode);
   }
 
-  // Schedule a new callback. 一个新的调度回调函数
+  // 创建一个优先级最高的调度的回调函数
   let newCallbackNode;
   if (newCallbackPriority === SyncLane) {
     // Special case: Sync React callbacks are scheduled on a special
@@ -1316,7 +1316,7 @@ function performSyncWorkOnRoot(root) {
 
   flushPassiveEffects(); // 刷新被动作用（首次渲染返回 false）
 
-  // 获取本次`render`的优先级
+  // 获取本次渲染通道的优先级
   let lanes = getNextLanes(root, NoLanes);
   if (!includesSomeLane(lanes, SyncLane)) {
     // There's no remaining sync work left.
@@ -1577,6 +1577,7 @@ function prepareFreshStack(root: FiberRoot, lanes: Lanes): Fiber {
   workInProgressRootConcurrentErrors = null;
   workInProgressRootRecoverableErrors = null;
 
+  // 1. 刷新更新的队列数据为null 2.
   finishQueueingConcurrentUpdates();
 
   if (__DEV__) {
@@ -1750,13 +1751,13 @@ export function renderHasNotSuspendedYet(): boolean {
   // so those are false.
   return workInProgressRootExitStatus === RootInProgress;
 }
-
+// 同步渲染 1. 设置渲染 executionContext 的状态
 function renderRootSync(root: FiberRoot, lanes: Lanes) {
   const prevExecutionContext = executionContext;
 
   // 设置当前的上下文状态
   executionContext |= RenderContext;
-  const prevDispatcher = pushDispatcher();
+  const prevDispatcher = pushDispatcher(); // 获取 hook 的公共 api 的调取器
 
   // If the root or lanes have changed, throw out the existing stack
   // and prepare a fresh one. Otherwise we'll continue where we left off.

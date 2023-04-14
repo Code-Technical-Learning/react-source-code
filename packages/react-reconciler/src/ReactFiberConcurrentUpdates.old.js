@@ -92,7 +92,7 @@ export function finishQueueingConcurrentUpdates(): void {
 export function getConcurrentlyUpdatedLanes(): Lanes {
   return concurrentlyUpdatedLanes;
 }
-
+// 加入更新队列
 function enqueueUpdate(
   fiber: Fiber,
   queue: ConcurrentQueue | null,
@@ -105,12 +105,13 @@ function enqueueUpdate(
   concurrentQueues[concurrentQueuesIndex++] = queue;
   concurrentQueues[concurrentQueuesIndex++] = update;
   concurrentQueues[concurrentQueuesIndex++] = lane;
-
+  // 当前更新通道为 1
   concurrentlyUpdatedLanes = mergeLanes(concurrentlyUpdatedLanes, lane);
 
   // The fiber's `lane` field is used in some places to check if any work is
   // scheduled, to perform an eager bailout, so we need to update it immediately.
   // TODO: We should probably move this to the "shared" queue instead.
+  // 设置 fiberRoot 通道
   fiber.lanes = mergeLanes(fiber.lanes, lane);
   const alternate = fiber.alternate;
   if (alternate !== null) {
@@ -146,14 +147,14 @@ export function enqueueConcurrentHookUpdateAndEagerlyBailout<S, A>(
 
 export function enqueueConcurrentClassUpdate<State>(
   fiber: Fiber,
-  queue: ClassQueue<State>,
-  update: ClassUpdate<State>,
+  queue: ClassQueue<State>, // shareUpdate
+  update: ClassUpdate<State>, // update
   lane: Lane,
 ): FiberRoot | null {
   const concurrentQueue: ConcurrentQueue = (queue: any);
   const concurrentUpdate: ConcurrentUpdate = (update: any);
   enqueueUpdate(fiber, concurrentQueue, concurrentUpdate, lane);
-  return getRootForUpdatedFiber(fiber);
+  return getRootForUpdatedFiber(fiber); // 获取 fiberRoot
 }
 
 export function enqueueConcurrentRenderForLane(

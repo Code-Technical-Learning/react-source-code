@@ -17,8 +17,8 @@ import {
 import {ImmediatePriority, scheduleCallback} from './Scheduler';
 
 // 回调任务队列
-let syncQueue: Array<SchedulerCallback> | null = null;
-let includesLegacySyncCallbacks: boolean = false;
+let syncQueue: Array<SchedulerCallback> | null = null; // 同步任务队列
+let includesLegacySyncCallbacks: boolean = false; // 是否包含同步回调
 let isFlushingSyncQueue: boolean = false;
 
 export function scheduleSyncCallback(callback: SchedulerCallback) {

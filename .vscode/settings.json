@@ -2,4 +2,5 @@
   "javascript.validate.enable": false,
   "typescript.validate.enable": false,
   "workbench.colorTheme": "One Dark Pro Darker",
+  "eslint.enable": false
 }

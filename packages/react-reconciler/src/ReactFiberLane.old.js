@@ -201,8 +201,8 @@ export function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes {
   const suspendedLanes = root.suspendedLanes;
   const pingedLanes = root.pingedLanes;
 
-  // Do not work on any idle work until all the non-idle work has finished,
-  // even if the work is suspended.
+  // Do not work on any idle work until all the non-idle work has finished, 在所有非空闲工作完成之前，不要进行任何空闲工作，
+  // even if the work is suspended. 即使工作被暂停
   const nonIdlePendingLanes = pendingLanes & NonIdleLanes;
   if (nonIdlePendingLanes !== NoLanes) {
     const nonIdleUnblockedLanes = nonIdlePendingLanes & ~suspendedLanes;
@@ -393,7 +393,7 @@ function computeExpirationTime(lane: Lane, currentTime: number) {
       return NoTimestamp;
   }
 }
-
+// 根据 markRootUpdated 的标记设置超时时间的通道
 export function markStarvedLanesAsExpired(
   root: FiberRoot,
   currentTime: number,
@@ -432,6 +432,7 @@ export function markStarvedLanesAsExpired(
       root.expiredLanes |= lane;
     }
 
+    // 重置 while 循环的 lane
     lanes &= ~lane;
   }
 }
@@ -584,7 +585,7 @@ export function markRootUpdated(
   updateLane: Lane,
   eventTime: number,
 ) {
-  root.pendingLanes |= updateLane;
+  root.pendingLanes |= updateLane; // 标记根更新的通道
 
   // If there are any suspended transitions, it's possible this new update
   // could unblock them. Clear the suspended lanes so that we can try rendering
@@ -598,11 +599,13 @@ export function markRootUpdated(
   // We don't do this if the incoming update is idle, because we never process
   // idle updates until after all the regular updates have finished; there's no
   // way it could unblock a transition.
+  // 如果不是空闲通道
   if (updateLane !== IdleLane) {
     root.suspendedLanes = NoLanes;
     root.pingedLanes = NoLanes;
   }
 
+  // 设置 fiberRoot 事件时间通道
   const eventTimes = root.eventTimes;
   const index = laneToIndex(updateLane);
   // We can always overwrite an existing timestamp because we prefer the most
