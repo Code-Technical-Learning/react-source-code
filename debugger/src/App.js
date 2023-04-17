@@ -5,13 +5,19 @@ import {Component} from 'react';
 class App extends Component {
   constructor(prop) {
     super();
+
+    this.state = {
+      isSpan: '我是首次展示的值',
+    };
   }
 
-  click = () => {};
+  click = () => {
+    this.setState({isSpan: '我是 setState 后的值'});
+  };
 
   render() {
     return (
-      <div className="App">
+      <div className="App" onClick={this.click}>
         <header className="App-header">
           <img
             src={logo}
@@ -20,31 +26,18 @@ class App extends Component {
             onClick={this.click}
           />
 
-          <span>1</span>
+          <span>{this.state.isSpan}</span>
+
+          <FNComponents
+            showText={'我是 FNComponents 展示的 Prop 的值'}></FNComponents>
         </header>
       </div>
     );
   }
 }
 
-// function App() {
-//   return (
-//     <div className="App">
-//       <header className="App-header">
-//         <img src={logo} className="App-logo" alt="logo" />
-//         <p>
-//           Edit <code>src/App.js</code> and save to reload.
-//         </p>
-//         <a
-//           className="App-link"
-//           href="https://reactjs.org"
-//           target="_blank"
-//           rel="noopener noreferrer">
-//           Learn React
-//         </a>
-//       </header>
-//     </div>
-//   );
-// }
+function FNComponents({showText}) {
+  return <div className="FNComponents">{showText}</div>;
+}
 
 export default App;

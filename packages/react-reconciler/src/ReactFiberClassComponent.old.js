@@ -1139,7 +1139,7 @@ function updateClassInstance(
 
   const oldState = workInProgress.memoizedState;
   let newState = (instance.state = oldState);
-  processUpdateQueue(workInProgress, newProps, instance, renderLanes);
+  processUpdateQueue(workInProgress, newProps, instance, renderLanes); // 更新 state
   newState = workInProgress.memoizedState;
 
   if (

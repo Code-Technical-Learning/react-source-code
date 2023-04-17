@@ -1239,6 +1239,7 @@ function updateClassComponent(
       renderLanes,
     );
   } else {
+    // 更新 state，prop 并判断是否需要更新
     shouldUpdate = updateClassInstance(
       current,
       workInProgress,
@@ -1354,6 +1355,7 @@ function finishClassComponent(
       renderLanes,
     );
   } else {
+    // reconcileChildren() 函数实现了 diff
     reconcileChildren(current, workInProgress, nextChildren, renderLanes);
   }
 
@@ -3535,8 +3537,7 @@ function bailoutOnAlreadyFinishedWork(
     }
   }
 
-  // This fiber doesn't have work, but its subtree does. Clone the child
-  // fibers and continue.
+  // 本fiber虽然不用更新, 但是子节点需要更新. clone并返回子节点
   cloneChildFibers(current, workInProgress);
   return workInProgress.child;
 }
@@ -3895,7 +3896,7 @@ function beginWork(
       ) {
         // No pending updates or context. Bail out now.
         didReceiveUpdate = false;
-        // 本`fiber`节点的没有更新, 可以复用, 进入bailout逻辑
+        // 本`fiber`节点的没有更新, 可以复用, 调用循环检测子节点是否需要更新
         return attemptEarlyBailoutIfNoScheduledUpdate(
           current,
           workInProgress,

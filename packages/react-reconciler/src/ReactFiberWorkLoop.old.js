@@ -1783,7 +1783,7 @@ function renderRootSync(root: FiberRoot, lanes: Lanes) {
     }
 
     workInProgressTransitions = getTransitionsForLanes(root, lanes);
-    // 刷新栈帧, legacy模式下都会进入
+    // 刷新栈帧, legacy模式下都会进入，如果从单个变量来看, 它们就是一个个的全局变量. 如果将这些全局变量组合起来, 它们代表了当前fiber树构造的活动记录. 通过这一组全局变量, 可以还原fiber树构造过程(比如时间切片的实现过程(参考React 调度原理), fiber树构造过程被打断之后需要还原进度, 全靠这一组全局变量).
     prepareFreshStack(root, lanes);
   }
 
@@ -1955,7 +1955,7 @@ function performUnitOfWork(unitOfWork: Fiber): void {
   resetCurrentDebugFiberInDEV();
   unitOfWork.memoizedProps = unitOfWork.pendingProps;
   if (next === null) {
-    // If this doesn't spawn new work, complete the current work.
+    // fiber 的 workloop 没有新的工作，那么久进入回溯阶段
     completeUnitOfWork(unitOfWork);
   } else {
     workInProgress = next;
