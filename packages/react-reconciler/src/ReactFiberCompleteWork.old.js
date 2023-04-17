@@ -965,7 +965,7 @@ function completeWork(
     }
     case HostComponent: {
       popHostContext(workInProgress);
-      const rootContainerInstance = getRootHostContainer();
+      const rootContainerInstance = getRootHostContainer(); // 获取挂载的根 div
       const type = workInProgress.type;
       // update逻辑, 初次render不会进入
       if (current !== null && workInProgress.stateNode != null) {

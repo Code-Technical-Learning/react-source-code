@@ -319,15 +319,15 @@ export function createHydrationContainer(
 }
 
 export function updateContainer(
-  element: ReactNodeList, // reactElement
-  container: OpaqueRoot, // fiberRoot
+  element: ReactNodeList, // ReactElement
+  container: OpaqueRoot, // FiberRoot
   parentComponent: ?React$Component<any, any>,
   callback: ?Function,
 ): Lane {
   if (__DEV__) {
     onScheduleRoot(container, element);
   }
-  const current = container.current; // current 是 rootFiber
+  const current = container.current; // current 是 RootFiber
   const eventTime = requestEventTime(); // 初次渲染获取当前时间戳
   // 首次渲染为 legacy：是同步
   // 根据通道优先级, 创建update对象, 并加入fiber.updateQueue.pending队列
@@ -364,7 +364,7 @@ export function updateContainer(
   // 创建更新队列，为 tag 为 update操作
   const update = createUpdate(eventTime, lane);
   // Caution: React DevTools currently depends on this property
-  // being called "element".
+  // being called "element". 首次 element 是 App ReactElement
   update.payload = {element};
 
   callback = callback === undefined ? null : callback;
@@ -381,7 +381,7 @@ export function updateContainer(
     update.callback = callback;
   }
 
-  // 设置 当前 fiber 更新队列的通道,返回 fiberRoot
+  // 设置 当前 fiber 更新队列的通道,返回 FiberRoot (带有全局属性)
   const root = enqueueUpdate(current, update, lane);
   if (root !== null) {
     // 进入reconciler运作流程中的`输入`环节

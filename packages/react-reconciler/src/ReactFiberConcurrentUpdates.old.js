@@ -241,11 +241,12 @@ function markUpdateLaneFromFiberToRoot(
 }
 
 function getRootForUpdatedFiber(sourceFiber: Fiber): FiberRoot | null {
-  // TODO: We will detect and infinite update loop and throw even if this fiber
+  // TODO: We will detect and infinite update loop and throw even if this fiber 我们将检测如果该 Fiber无限更新循环并抛出
   // has already unmounted. This isn't really necessary but it happens to be the
   // current behavior we've used for several release cycles. Consider not
   // performing this check if the updated fiber already unmounted, since it's
   // not possible for that to cause an infinite update loop.
+  // 已经卸载了。这并不是真正必要的，但它恰好是我们在几个发布周期中使用的当前行为。如果更新的光纤已经卸载，请考虑不执行此检查，因为这不可能导致无限更新循环。
   throwIfInfiniteUpdateLoopDetected();
 
   // When a setState happens, we must ensure the root is scheduled. Because
@@ -254,7 +255,8 @@ function getRootForUpdatedFiber(sourceFiber: Fiber): FiberRoot | null {
   // deal because we would have to walk up the return path to set
   // the `childLanes`, anyway, but now those two traversals happen at
   // different times.
-  // TODO: Consider adding a `root` backpointer on the update queue.
+  // 当发生setState时，必须确保根节点已被调度。因为更新队列没有指向根的回溯指针，所以目前惟一的方法是沿着返回路径走。这以前不是什么大问题，因为我们必须沿着返回路径来设置“childLanes”，但现在这两次遍历发生在不同的时间。
+  // TODO: Consider adding a `root` backpointer on the update queue. 考虑在更新队列上添加一个“root”后向指针。
   detectUpdateOnUnmountedFiber(sourceFiber, sourceFiber);
   let node = sourceFiber;
   let parent = node.return;

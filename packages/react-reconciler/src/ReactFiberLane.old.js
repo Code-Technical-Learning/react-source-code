@@ -585,7 +585,7 @@ export function markRootUpdated(
   updateLane: Lane,
   eventTime: number,
 ) {
-  root.pendingLanes |= updateLane; // 标记根更新的通道
+  root.pendingLanes |= updateLane; // 标记全局更新的通道
 
   // If there are any suspended transitions, it's possible this new update
   // could unblock them. Clear the suspended lanes so that we can try rendering

@@ -1395,7 +1395,7 @@ function updateHostRoot(current, workInProgress, renderLanes) {
   const nextProps = workInProgress.pendingProps;
   const prevState = workInProgress.memoizedState;
   const prevChildren = prevState.element;
-  cloneUpdateQueue(current, workInProgress); // 将 current 的updateQueue 克隆到 workInProgress
+  cloneUpdateQueue(current, workInProgress); // 将 current 的 updateQueue 克隆到 workInProgress
   // 遍历updateQueue.shared.pending, 提取有足够优先级的update对象, 计算出最终的状态 workInProgress.memoizedState
   processUpdateQueue(workInProgress, nextProps, null, renderLanes);
 
